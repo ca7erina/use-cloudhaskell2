@@ -44,7 +44,7 @@ worker them = forever $ do
   n <- expect
   time1 <- liftIO $ getCurrentTime
   send them (doWork n)
-  liftIO $ putStrLn $ "[Node " ++ (show us) ++ "] given work: " ++ show n ++ show time1
+  -- liftIO $ putStrLn $ "[Node " ++ (show us) ++ "] send work: " ++ show n ++ show time1
 
 remotable ['worker] -- this makes the worker function executable on a remote node
 
@@ -61,11 +61,11 @@ manager n workers = do
   spawnLocal $ forM_ (zip [1 .. n] (cycle workerProcess)) $
     \(m, them) -> send them m
 
-  liftIO $ putStrLn $ "[Manager] Workers spawned"
+  -- liftIO $ putStrLn $ "[Manager] Workers spawned"
   -- wait for all the results from the workers and return the sum total. Look at the implementation, whcih is not simply
   -- summing integer values, but instead is expecting results from workers.
   sumIntegers (fromIntegral n)
-  
+
 
 -- note how this function works: initialised with n, the number range we started the program with, it calls itself
 -- recursively, decrementing the integer passed until it finally returns the accumulated value in go:acc. Thus, it will
@@ -93,15 +93,17 @@ someFunc = do
 
   case args of
     ["manager", host, port, n] -> do
-      putStrLn "Starting Node as Manager"
+      -- putStrLn "Starting Node as Manager"
       ct <- getCurrentTime
       print ct
       backend <- initializeBackend host port rtable
       startMaster backend $ \workers -> do
         result <- manager (read n) workers
         liftIO $ print result
+        time1 <- liftIO $ getCurrentTime
+        liftIO $ print time1
     ["worker", host, port] -> do
-      putStrLn "Starting Node as Worker"
+      -- putStrLn "Starting Node as Worker"
       backend <- initializeBackend host port rtable
       startSlave backend
     _ -> putStrLn "Bad parameters"
